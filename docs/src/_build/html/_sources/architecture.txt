@@ -1,4 +1,0 @@
-============
-Architecture
-============
-.. image:: architecture.png
