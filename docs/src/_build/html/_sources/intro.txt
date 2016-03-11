@@ -1,6 +1,6 @@
-# soundtomidi
-Python module that takes live sound, processes it, and generates 
-semi-useful MIDI data from it.
+============
+Introduction
+============
 
 Overview
 ========
@@ -21,14 +21,16 @@ put this program on Raspberry PI or Beagle Bone and just let it live a very
 stressed out life of doing nothing but listening to audio and putting out
 MIDI messages. Which must be a depressing life for a circuit board.
 
+What It Can Do
+==============
 As it stands now, from live audio you can get the following information from
 the live sound:
 
-+  The beat
-+  The beats-per-minute (BPM)
-+  The fundamental pitch
-+  The root-mean-square (RMS)
-+  The strength of various frequency bands (think graphic equalizer)
+* The beat
+* The beats-per-minute (BPM)
+* The fundamental pitch
+* The root-mean-square (RMS)
+* The strength of various frequency bands (think graphic equalizer)
 
 Is it accurate? Well, that depends. It took me a whole lot of tweaking to
 figure out how much data each of the audio processors actually needs to get
@@ -54,36 +56,3 @@ to make some lights react to live audio sounds. And if your purpose is
 something along those lines and reading about what to do with the imaginary
 number part of a FFT transformation is making you wish you stayed awake
 in calculus class, this may be useful to you too.
-
-This is built using existing libraries from people a whole lot smarter than me,
-of which these are particularly of note.
-
-+    docopt
- 
- Provided some sanity with the insane amount of tweaks that one might 
- want to do in all of this.
-
-+    sounddevice
-        
- There are several very good options for dealing with incoming audio.
- I can't remember exactly why I chose this one except that handily
- put the data into numpy arrays for me.
-
-+    aubio
-        
- Wow. This is something else. This is a C (I think) library that
- does all of the mathy stuff with the audio samples. It has Python
- wrappers thankfully that made this possible. I barely understand any of
- the terminology, and the documentation is really just looking at the
- Python code examples, but it pretty much did everything I wanted it
- to do. Installation was a bit of trial, and I cannot seem to get it
- to build for Python 3.5 for anything. I'm also concerned about a
- possibly memory leak in the phase vocoder, but there's a very good
- chance it's my lack of knowledge that is causing it.
-
-+    mido
-
- I really like this library for dealing with MIDI messages.
- Very well documented and simple to use on both the sending and
- receiving end. Which means I don't have much to say about it--it works
- and it works well.
