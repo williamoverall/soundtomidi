@@ -1,0 +1,368 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Architecture &mdash; SoundToMIDI 0.1.0 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="SoundToMIDI 0.1.0 documentation" href="index.html"/>
+        <link rel="next" title="Credits" href="credits.html"/>
+        <link rel="prev" title="Introduction" href="intro.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> SoundToMIDI
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">Architecture</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#options">Options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#processaudio">ProcessAudio</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#tempofinder">TempoFinder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#beatfinder">BeatFinder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#rmsfinder">RMSFinder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#frequenciesfinder">FrequenciesFinder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pitchfinder">PitchFinder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#midiprocessor">MidiProcessor</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="credits.html">Credits</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">SoundToMIDI</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+ 
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+    <li>Architecture</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/architecture.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="architecture">
+<h1>Architecture<a class="headerlink" href="#architecture" title="Permalink to this headline">¶</a></h1>
+<img alt="_images/architecture.png" src="_images/architecture.png" />
+<div class="section" id="options">
+<h2>Options<a class="headerlink" href="#options" title="Permalink to this headline">¶</a></h2>
+<p>Just about everything (too much) is configured via the Options class. Defaults
+and command line options are handled via the docopt library, which uses a
+very verbose docstring to work. Options can also come from an inifile via the
+confirparser library. Right now the priority for configuration options is:</p>
+<p>inifile &gt; command line &gt; docstring defaults</p>
+<p>In the future, the priority will be:</p>
+<p>command line &gt; inifile &gt; docstring defaults</p>
+<p>The dictionary of options, sans the double hyphen prefix in the case of those
+coming in via docopt, are used throughout the package. No advance cleanup
+is taking place to, for example, turn a value into an string into an int.</p>
+<p>Note that for any options dealing with MIDI, both int and hex values are
+allowed and will be translated as needed.  In other words, both 0x7F and 127
+are both acceptable.</p>
+</div>
+<div class="section" id="processaudio">
+<h2>ProcessAudio<a class="headerlink" href="#processaudio" title="Permalink to this headline">¶</a></h2>
+<p>ProcessAudio initializes the sound card for record as well as the various
+audioprocessors that have been turned on. Once started, a callback loop takes
+frames of incoming audio data and sends a copy of each frame as an array to
+the live audio processors.</p>
+</div>
+<div class="section" id="tempofinder">
+<h2>TempoFinder<a class="headerlink" href="#tempofinder" title="Permalink to this headline">¶</a></h2>
+<p>The TempoFinder receives frames of audio data from ProcessAudio. Depending on
+how it has been configured, it may accumulate some multiple of these audio
+frames before moving on. Once a threshold amount of audio has been received,
+it uses the aubio tempo class to try to get the BPM of the audio. Configurable
+averaging takes place to keep radical values from throwing things off.
+Assumptions are made that extremely low BPM values should be doubled, and
+likewise extremely high values should be halved. After that, values lower than
+a BPM of 60 or greater than a BPM of 187 are ignored.</p>
+<p>If the BPM value has changed from the last time this has run, MIDI messages
+are prepared with the new information. Due to the 7 bit nature of MIDI, there
+are several ways to encode the BPM into MIDI messages, which can be configured.
+Once the message or messages are prepared, they are handed off the
+MidiProcessor and the TempoFinder object waits for new frames of audio data
+to go through all of this again.</p>
+</div>
+<div class="section" id="beatfinder">
+<h2>BeatFinder<a class="headerlink" href="#beatfinder" title="Permalink to this headline">¶</a></h2>
+<p>The BeatFinder receives frames of audio data from ProcessAudio. Depending on
+how it has been configured, it may accumulate some multiple of these audio
+frames before moving on. Once a threshold amount of audio has been received,
+it uses the aubio tempo class to find out if there is a beat in the audio
+frame. The BeatFinder object can be configured to count the beats, so that
+the first beat is assigned a value of 0, the second beat a value of 1, and so
+on, repeating as necessary.  The default is to count 8 beats in a row, assign
+each as a value 0-7, then looping back around to 0 and starting again.</p>
+<p>MIDI messages are prepared with the beat information with the beat location
+as the value of the message and are handed off the MidiProcessor. The
+TempoFinder object waits for new frames of audio data to go through all of this
+again.</p>
+<p>Though it doesn&#8217;t exist yet, this is where MIDI clock messages should
+originate. The MIDI spec calls for 24 clock messages to be sent per quarter
+note. To implement, we will need to measure the time elapsed between the
+previous two quarter notes&#8211;for 120BPM, that would 0.5 seconds. We would then
+send clock messages at 1/24th of this time (0.5 / 24 = 0.0208333 seconds).
+This will require a separate thread, and even then, with all of the stuff
+that is happening with processing the sound, I&#8217;m not sure how well it would
+actually work.</p>
+</div>
+<div class="section" id="rmsfinder">
+<h2>RMSFinder<a class="headerlink" href="#rmsfinder" title="Permalink to this headline">¶</a></h2>
+<p>The RMSFinder receives frames of audio data from ProcessAudio. Depending on
+how it has been configured, it may accumulate some multiple of these audio
+frames before moving on. Once a threshold amount of audio has been received,
+some math is done on the accumulated data to determine the root-mean-square, or
+RMS. Aubio is not used for this, it&#8217;s just a function that is very likely
+wrong. But in the end, loud sound comes out near 127 and quiet sound is
+near 0, so it&#8217;s good enough for the moment.</p>
+<p>MIDI messages are prepared with this value and is handed off the MidiProcessor.
+The RMSFinder object waits for new frames of audio data to go through all of
+this again.</p>
+</div>
+<div class="section" id="frequenciesfinder">
+<h2>FrequenciesFinder<a class="headerlink" href="#frequenciesfinder" title="Permalink to this headline">¶</a></h2>
+<p>The FrequenciesFinder receives frames of audio data from ProcessAudio.
+Depending on how it has been configured, it may accumulate some multiple of
+these audio frames before moving on. Once a threshold amount of audio has been
+received, this is sent to the aubio phase vocoder, which returns data that is
+sent to the aubio filterbank.</p>
+<p>Several things on this. The aubio phase vocoder is essentially a wrapper
+around a FFT function (from FFTW, I believe). By design, the goal is to align
+frames of data so that overlaps with previous audio frames match with the
+current one. Unfortunately, this creates something of a memory leak that I&#8217;ve
+yet to eliminate. While you do want to hang on some amount of previous frames
+for this matching process, after an hour there is no need for the previous
+frames of audio to still be sticking around. I&#8217;ve not yet figured out how to
+fix this. Just know that if you intend to use this audio processor that you
+should keep an eye on how much memory is being used. For short time periods,
+it may not be a problem, but if the idea is to leave this running for a long
+period of time unpredictable things might happen.</p>
+<p>The results from the phase vocoder are fed to the aubio filterbank, which
+determines the strength between audio bands.  The definition of those audio
+bands is configurable, with presets available third-octave (30 bands) and
+octave (10 bands) that is pretty close to what you see on graphic equalizers.</p>
+<p>The results of each band in the filterbank are translated into values 0-127.
+The peak of 127 is assumed to be the highest value ever received in that bank,
+and everything else is considered a fractional portion of that. What this means
+practically is that as program is running is that the meaning of what a value
+of, say, 60 in band 0 means will change over time.  But, as with RMS, you
+do get a decent enough value to do something with.</p>
+<p>A MIDI sysex message is prepared, with each band adding a single value of 0-127
+to the message, moving from the lowest frequency bands to the highest.  The
+message is handed off the MidiProcessor and the FrequenciesFinder object
+waits for new frames of audio data to go through all of this again.</p>
+</div>
+<div class="section" id="pitchfinder">
+<h2>PitchFinder<a class="headerlink" href="#pitchfinder" title="Permalink to this headline">¶</a></h2>
+<p>The PitchFinder receives frames of audio data from ProcessAudio. Depending on
+how it has been configured, it may accumulate some multiple of these audio
+frames before moving on. Once a threshold amount of audio has been
+received, this is sent to the aubio pitch object, which returns a midi note
+value 0-127. Well, actually, sometimes it sends something beyond that, so those
+values are ignored.</p>
+<p>MIDI notes start at 0, with is &#8220;C&#8221;, and each octave occupies 12 slots in this
+sequence:</p>
+<p>C  C#  D  D#  E  F  F#  G  G#  A  A#  B</p>
+<p>At 12, it starts again, and so on up to 127, or a little less than 11 octaves
+total.  Middle C on a piano is a value of 60.</p>
+<p>The aubio pitch object can return any of these values, but quite often it
+struggles to determine the proper octave, so you can see oscillation between,
+say, 60 and 72.  Both are a C note, but the octave is unclear.  For this
+reason, you can opt to just send 12 notes where the octave is basically
+ignored but the fundamental pitch is correct. You can also opt to shift these
+12 notes to somewhere else on the scale&#8211;perhaps to start at the middle C
+position so that the possible notes are just 60-71.</p>
+<p>Be realistic about expectations here. Chords seem to really throw pitch
+detection off.  Often you will see oscillation between all of the notes that
+make up the chord.</p>
+<p>This information can be sent as MIDI control or sysex messages, but in this
+one case, you can also send this as actual MIDI note values. In this case, you
+may want to send both a note on message when a new pitch is found as well as
+a note off message to turn off the previous pitch.</p>
+<p>As with everything else, once there is a change in pitch, the configured MIDI
+messages are passed off to the MidiProcessor and the whole process starts
+again.</p>
+</div>
+<div class="section" id="midiprocessor">
+<h2>MidiProcessor<a class="headerlink" href="#midiprocessor" title="Permalink to this headline">¶</a></h2>
+<p>The MidiProcessor receives MIDI messages from the audio processors and sends
+these out to the configured MIDI port.  No prioritization of incoming
+messages is taking place, nor is any buffering. Basically it&#8217;s just a fire
+hose that shoots out messages.</p>
+<p>When the SoundToMidi package is running on the same computer as the software
+that is listening for these messages, sending things out and receiving them
+on an internal MIDI bus is definitely not the most efficient way to do
+things. This class could be expanded to take advantage of different ways of
+doing this better and faster.</p>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="credits.html" class="btn btn-neutral float-right" title="Credits" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="intro.html" class="btn btn-neutral" title="Introduction" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, William Overall.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'0.1.0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

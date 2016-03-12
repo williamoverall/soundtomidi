@@ -1,0 +1,241 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Credits &mdash; SoundToMIDI 0.1.0 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="SoundToMIDI 0.1.0 documentation" href="index.html"/>
+        <link rel="prev" title="Installation" href="installation.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> SoundToMIDI
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="architecture.html">Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">Credits</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#docopt">docopt</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#sounddevice">sounddevice</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#aubio">aubio</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#mido">mido</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">SoundToMIDI</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+ 
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+    <li>Credits</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/credits.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="credits">
+<h1>Credits<a class="headerlink" href="#credits" title="Permalink to this headline">¶</a></h1>
+<p>This is built using existing libraries from people a whole lot smarter than me,
+of which these are particularly of note.</p>
+<div class="section" id="docopt">
+<h2>docopt<a class="headerlink" href="#docopt" title="Permalink to this headline">¶</a></h2>
+<p>The <a class="reference external" href="http://docopt.org">docopt</a> package provided some sanity with the insane
+amount of tweaks that one might want to do in all of this.</p>
+</div>
+<div class="section" id="sounddevice">
+<h2>sounddevice<a class="headerlink" href="#sounddevice" title="Permalink to this headline">¶</a></h2>
+<p>The <a class="reference external" href="http://python-sounddevice.readthedocs.org/en/0.3.1/">python-sounddevice</a>
+package is one of several very good packages for dealing with incoming audio,
+but I liked this one because it conveniently put incoming frames directly into
+a numpy float32 array for me.</p>
+</div>
+<div class="section" id="aubio">
+<h2>aubio<a class="headerlink" href="#aubio" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference external" href="http://aubio.org">Aubio</a> is the brains behind any of this.  It is a C (I
+think) library that does all of the mathy stuff with the audio samples. It has
+Python wrappers thankfully that made this possible. I barely understand any of
+the terminology, and the documentation is really just looking at the
+Python code examples, but it pretty much did everything I wanted it
+to do. Installation was a bit of trial, and I cannot seem to get it
+to build for Python 3.5 for anything. I&#8217;m also concerned about a
+possibly memory leak in the phase vocoder, but there&#8217;s a very good
+chance it&#8217;s my lack of knowledge that is causing it.</p>
+</div>
+<div class="section" id="mido">
+<h2>mido<a class="headerlink" href="#mido" title="Permalink to this headline">¶</a></h2>
+<p>The <a class="reference external" href="https://mido.readthedocs.org/en/latest/">mido</a> package is a great
+example of a well-documented and simple-to-use library for dealing with MIDI
+messages. I&#8217;d love it if this fumbling efforts of this project made it over
+into this universe to grow up and be loved.</p>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+      
+        <a href="installation.html" class="btn btn-neutral" title="Installation" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, William Overall.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'0.1.0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

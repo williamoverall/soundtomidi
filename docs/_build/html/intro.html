@@ -1,0 +1,260 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Introduction &mdash; SoundToMIDI 0.1.0 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="SoundToMIDI 0.1.0 documentation" href="index.html"/>
+        <link rel="next" title="Architecture" href="architecture.html"/>
+        <link rel="prev" title="Welcome to SoundToMIDI’s documentation!" href="index.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> SoundToMIDI
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="">Introduction</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#what-it-can-do">What It Can Do</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="architecture.html">Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="credits.html">Credits</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">SoundToMIDI</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+ 
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+    <li>Introduction</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/intro.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="introduction">
+<h1>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
+<p>This started with what seemed like a simple idea&#8211;use live audio to modify
+the output of some LEDs. Which if you&#8217;ve been down this path, you come to
+realize that the LED part (or DMX/ArtNet) is actually the easy part. It&#8217;s
+getting some form of useful information about the audio in the first place
+that can be challenging.</p>
+<p>I don&#8217;t want to do this again, so after many different ways of trying this,
+decided the most useful approach would be to create a single program to handle
+all of the audio stuff and then turn that into some actionable MIDI output
+data that I can play with. MIDI seemed like the best candidate for the job
+since many light control programs, like DMXIS and QLC+, already have hooks for
+listening to incoming MIDI data. It is rather inefficient when this program
+is running on the same computer as the receiving software, but my idea is to
+put this program on Raspberry PI or Beagle Bone and just let it live a very
+stressed out life of doing nothing but listening to audio and putting out
+MIDI messages. Which must be a depressing life for a circuit board.</p>
+</div>
+<div class="section" id="what-it-can-do">
+<h2>What It Can Do<a class="headerlink" href="#what-it-can-do" title="Permalink to this headline">¶</a></h2>
+<p>As it stands now, from live audio you can get the following information from
+the live sound:</p>
+<ul class="simple">
+<li>The beat</li>
+<li>The beats-per-minute (BPM)</li>
+<li>The fundamental pitch</li>
+<li>The root-mean-square (RMS)</li>
+<li>The strength of various frequency bands (think graphic equalizer)</li>
+</ul>
+<p>Is it accurate? Well, that depends. It took me a whole lot of tweaking to
+figure out how much data each of the audio processors actually needs to get
+the best results. So, the sounddevice deals with very short frames of data
+and each audio processor accumulates some multiple of that, as well as a hop
+size (that I only barely understand what it means). But, even through a mic,
+the beat and BPM values look pretty solid. The fundamental pitch more or less
+works too when I play a keyboard in the room next to the mic. There&#8217;s a good
+chance the RMS is being calculated wrong, so there&#8217;s that. The frequency
+bands seem to be about right when I play an increasing sine wave of all audio
+frequencies from 20-20000 (search YouTube for &#8220;hearing test&#8221;).</p>
+<p>Is it efficient? No! Clearly all of the audio processors could share the
+same set of incoming audio data without making copies of it. They started that
+way, but it turns out that the best size of an audio frame for finding a beat
+is much different than the best size for calculating frequency strengths for
+the 31 octave bands. The code got so jumbled up that in the end I decided
+to just let each of these audio processor workers have their own copy of the
+audio data to do the nefarious things they want to do with it.</p>
+<p>In the end, it is accurate enough information for my purposes, which is just
+to make some lights react to live audio sounds. And if your purpose is
+something along those lines and reading about what to do with the imaginary
+number part of a FFT transformation is making you wish you stayed awake
+in calculus class, this may be useful to you too.</p>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="architecture.html" class="btn btn-neutral float-right" title="Architecture" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="index.html" class="btn btn-neutral" title="Welcome to SoundToMIDI’s documentation!" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, William Overall.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'0.1.0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>
