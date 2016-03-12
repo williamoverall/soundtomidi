@@ -50,7 +50,7 @@ MidiProcessor and the TempoFinder object waits for new frames of audio data
 to go through all of this again.
 
 BeatFinder
-===========
+==========
 The BeatFinder receives frames of audio data from ProcessAudio. Depending on
 how it has been configured, it may accumulate some multiple of these audio
 frames before moving on. Once a threshold amount of audio has been received,
@@ -75,7 +75,7 @@ that is happening with processing the sound, I'm not sure how well it would
 actually work.
 
 RMSFinder
-===========
+=========
 The RMSFinder receives frames of audio data from ProcessAudio. Depending on
 how it has been configured, it may accumulate some multiple of these audio
 frames before moving on. Once a threshold amount of audio has been received,

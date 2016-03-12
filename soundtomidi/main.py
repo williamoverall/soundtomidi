@@ -43,36 +43,22 @@ Options:
   --samplerate=SAMPLERATE       Capture rate for audio samples.
                                 [default: 44100]
   --framesize=FRAMESIZE         Size of each frame captured.
-                                [default: 512]
-  --midiin=MIDIIN               Receive MIDI messages?
-                                Future use-modify how the audio processors
-                                work through MIDI commands.
-                                [default: False]
+  --stdout=STDOUT               Echo message to standard out.
+                                [default: True]
+  --stdoutformat=STDOUTFORMAT   Format for standard out messages. Options are
+                                "verbose", "bytes", "bin" or "hex".
+                                [default: verbose]
   --midiout=MIDIOUT             Send MIDI messages?
                                 [default: True]
-  --inport=MIDIINPORT           Name of the MIDI input port. If left as
-                                default, uses first MIDI port found.
-                                Future use-modify how the audio processors
-                                work through MIDI commands.
-                                [default: default]
   --outport=MIDIOUTPORT         Name of the MIDI output port. If left as
                                 default, uses first MIDI port found.
                                 [default: default]
-  --inchannel=INCHANNEL         Number of the MIDI channel to receive messages
-                                on. Valid numbers 1-16.
-                                Future use-modify how the audio processors
-                                work through MIDI commands.
-                                [default: 13]
   --outchannel=OUTCHANNEL       Number of the MIDI channel to send messages on.
                                 Valid numbers 1-16.
                                 [default: 14]
   --sysexmanf=MANF              Manufacturer prefix code for sysex messages.
                                 Int or hex values, separarated by space.
                                 [default: 0x7D]
-  --sysexchan=SYSEXCHAN         Insert the midiout channel number after the
-                                manufacturer prefix and before the rest of
-                                message.
-                                [default: True]
   --gettempo=TEMPO              Get the tempo of the audio.
                                 [default: True]
   --talg=TALG                   Aubio algorithm for determining the tempo.
@@ -114,14 +100,6 @@ Options:
   --bframemult=BFRAMEMULT       Number of frames to use in calculation.
                                 [default: 1]
   --bhopmult=BHOPMULT           Hop size, as percent of FRAMEMULT.
-                                [default: 1]
-  --badjust=BADJUST             Adjust the incoming beats to match reality.
-                                Used to deal with beat detector seeing every
-                                other beat (or twice as many as there are).
-                                ".5" inserts beat halfway between two detected
-                                beats, "2" sends one beat message for every
-                                two detected, and "1" makes no adjustment.
-                                (Not yet implemented)
                                 [default: 1]
   --bcontrolnum=BCONTROLNUM     Controller number to send beat messages.
                                 If "None", no control messages will be sent.
@@ -226,12 +204,12 @@ Options:
   --pnoteoff=PNOTEOFF           Send note off messages when a new audio
                                 pitch doesn't match previous pitch.
                                 [default: True]
-  --psysexnum=PSYSEXNUM         Prefix to send prior to sending note value.
-                                If "None", no sysex messages will be sent.
-                                [default: 0x0C]
   --pcontrolnum=PCONTROLNUM     Controller number to send pitches.
                                 If "None", no control messages will be sent.
                                 [default: 21]
+  --psysexnum=PSYSEXNUM         Prefix to send prior to sending note value.
+                                If "None", no sysex messages will be sent.
+                                [default: 0x0C]
 
 """
 from __future__ import print_function
@@ -291,15 +269,14 @@ class Options:
         config.set('soundcard', 'channels', self.settings['channels'])
         config.set('soundcard', 'samplerate', self.settings['samplerate'])
         config.set('soundcard', 'framesize', self.settings['framesize'])
+        config.add_section('stdout')
+        config.set('stdout', 'stdout', self.settings['stdout'])
+        config.set('stdout', 'stdoutformat', self.settings['stdoutformat'])
         config.add_section('midi')
-        config.set('midi', 'midiin', self.settings['midiin'])
         config.set('midi', 'midiout', self.settings['midiout'])
-        config.set('midi', 'inport', self.settings['inport'])
         config.set('midi', 'outport', self.settings['outport'])
-        config.set('midi', 'inchannel', self.settings['inchannel'])
         config.set('midi', 'outchannel', self.settings['outchannel'])
         config.set('midi', 'sysexmanf', self.settings['sysexmanf'])
-        config.set('midi', 'sysexchan', self.settings['sysexchan'])
         config.add_section('tempo')
         config.set('tempo', 'gettempo', self.settings['gettempo'])
         config.set('tempo', 'talg', self.settings['talg'])
@@ -316,7 +293,6 @@ class Options:
         config.set('beats', 'balg', self.settings['balg'])
         config.set('beats', 'bframemult', self.settings['bframemult'])
         config.set('beats', 'bhopmult', self.settings['bhopmult'])
-        config.set('beats', 'badjust', self.settings['badjust'])
         config.set('beats', 'bcontrolnum', self.settings['bcontrolnum'])
         config.set('beats', 'bsysexnum', self.settings['bsysexnum'])
         config.set('beats', 'bvaltype', self.settings['bvaltype'])
