@@ -231,6 +231,7 @@ from aubio import pitch, tempo, pvoc, filterbank, fvec
 import mido
 import math
 
+
 class Options:
     """Take configuration options as arguments or from an inifile.
 
@@ -364,7 +365,7 @@ class TempoFinder:
 
     """
 
-    def __init__(self):
+    def __init__(self, options):
         self.tempo_object = tempo(options.settings['talg'],
                                   int(float(options.settings['framesize']) *
                                       float(options.settings['tframemult'])),
@@ -395,11 +396,14 @@ class TempoFinder:
         self.BPMs = []
         self.average_BPMs = []
         self.last_BPM = 0.0
+        self.average = int(options.settings['taverage'])
+        self.count = int(options.settings['tcount'])
+        self.frame_multiplier = int(options.settings['tframemult'])
 
     def add_frame(self, frame_array):
         self.frame_arrays[self.frame_count] = frame_array
         self.frame_count += 1
-        if self.frame_count == int(options.settings['tframemult']):
+        if self.frame_count == self.frame_multiplier:
             combined_array = np.ravel(self.frame_arrays)
             self.tempo_object(combined_array)
             bpm = self.tempo_object.get_bpm()
@@ -412,11 +416,11 @@ class TempoFinder:
                 if bpm > 187.0:
                     bpm = 187.0
             self.BPMs.append(bpm)
-            if len(self.BPMs) > int(options.settings['taverage']):
+            if len(self.BPMs) > self.average:
                 del self.BPMs[0]
             self.average_BPMs.append(round(sum(self.BPMs) /
                                            len(self.BPMs), 1))
-            if len(self.average_BPMs) > int(options.settings['tcount']):
+            if len(self.average_BPMs) > self.count:
                 del self.average_BPMs[0]
             most_bpm, foo = Counter(self.average_BPMs).most_common(1)[0]
             if most_bpm != self.last_BPM:
@@ -466,7 +470,7 @@ class BeatFinder:
 
     """
 
-    def __init__(self):
+    def __init__(self, options):
         self.beat_object = tempo(options.settings['balg'],
                                  int(float(options.settings['framesize']) *
                                      float(options.settings['bframemult'])),
@@ -492,11 +496,12 @@ class BeatFinder:
             self.beat_sequence = [64]
         self.beat_sequence_position = 0
         self.frame_count = 0
+        self.frame_multiplier = int(options.settings['bframemult'])
 
     def add_frame(self, frame_array):
         self.frame_arrays[self.frame_count] = frame_array
         self.frame_count += 1
-        if self.frame_count == int(options.settings['bframemult']):
+        if self.frame_count == self.frame_multiplier:
             combined_array = np.ravel(self.frame_arrays)
             is_beat = self.beat_object(combined_array)
             if is_beat:
@@ -527,7 +532,7 @@ class RMSFinder:
 
     """
 
-    def __init__(self):
+    def __init__(self, options):
         self.midi_processor = None
         self.sysex_rms_command_array = []
         for command in options.settings['rsysexnum'].split(' '):
@@ -543,11 +548,13 @@ class RMSFinder:
         self.frame_count = 0
         self.max_rms = 0
         self.last_scaled_rms = 0
+        self.frame_multiplier = int(options.settings['rframemult'])
+        self.graceful = float(options.settings['rgraceful'])
 
     def add_frame(self, frame_array):
         self.frame_arrays[self.frame_count] = frame_array
         self.frame_count += 1
-        if self.frame_count == int(options.settings['rframemult']):
+        if self.frame_count == self.frame_multiplier:
             self.frame_count = 0
             combined_array = np.ravel(self.frame_arrays)
             rms = self.qmean(combined_array)
@@ -556,8 +563,7 @@ class RMSFinder:
             if self.max_rms > 0:
                 scaled_rms = int(127 * (rms / self.max_rms))
                 if scaled_rms != self.last_scaled_rms:
-                    graceful_rms = int(self.last_scaled_rms * float(
-                        options.settings['rgraceful']))
+                    graceful_rms = int(self.last_scaled_rms * self.graceful)
                     if scaled_rms < graceful_rms:
                         scaled_rms = graceful_rms
                     if self.rms_control_number:
@@ -587,7 +593,7 @@ class FrequenciesFinder:
 
     """
 
-    def __init__(self):
+    def __init__(self, options):
         if options.settings['fbuckets'] == 'third-octave':
             options.settings['fbuckets'] = [22.4,
                                             25, 31.5, 40, 50, 63,
@@ -634,11 +640,14 @@ class FrequenciesFinder:
                                        dtype=np.float32)
         self.energy_count = 0
         self.rest_stop = 0
+        self.frame_multiplier = int(options.settings['fframemult'])
+        self.count = int(options.settings['fcount'])
+        self.graceful = float(options.settings['fgraceful'])
 
     def add_frame(self, frame_array):
         self.frame_arrays[self.frame_count] = frame_array
         self.frame_count += 1
-        if self.frame_count == int(options.settings['fframemult']):
+        if self.frame_count == self.frame_multiplier:
             self.frame_count = 0
             combined_array = np.ravel(self.frame_arrays)
             # This is causing a memory leak on a OSX Brew installed version of
@@ -650,15 +659,14 @@ class FrequenciesFinder:
             fftgrain = self.phase_vocoder(combined_array)
             self.count_energies[self.energy_count] = self.filter_bank(fftgrain)
             self.energy_count += 1
-            if self.energy_count == int(options.settings['fcount']):
+            if self.energy_count == self.count:
                 self.energy_count = 0
                 energies = np.amax(self.count_energies, axis=0)
                 self.maximum_frequencies = np.maximum(energies,
                                                       self.maximum_frequencies)
                 energies = np.divide(energies, self.maximum_frequencies)
                 energies = np.maximum(energies, self.last_energies)
-                self.last_energies = energies * float(
-                    options.settings['fgraceful'])
+                self.last_energies = energies * self.graceful
                 energies *= 127.0
                 int_energies = energies.astype(int)
                 if self.sysex_command_array:
@@ -682,7 +690,7 @@ class PitchFinder:
 
     """
 
-    def __init__(self):
+    def __init__(self, options):
         self.pitch_object = pitch(options.settings['palg'],
                                   int(float(options.settings['framesize']) *
                                       float(options.settings['pframemult'])),
@@ -715,11 +723,19 @@ class PitchFinder:
         self.most_pitches = [-1]
         self.pitch_count = 0
         self.last_pitch = 0
+        self.frame_multiplier = int(options.settings['pframemult'])
+        self.count = int(options.settings['pcount'])
+        self.low_cutoff = int(options.settings['plowcutoff'])
+        self.high_cutoff = int(options.settings['phighcutoff'])
+        self.fold_octaves = False
+        if options.settings['pfoldoctaves'] == 'True':
+            self.fold_octaves = True
+        self.num_offset = int(options.settings['pnumoffset'])
 
     def add_frame(self, frame_array):
         self.frame_arrays[self.frame_count] = frame_array
         self.frame_count += 1
-        if self.frame_count == int(options.settings['pframemult']):
+        if self.frame_count == self.frame_multiplier:
             self.frame_count = 0
             combined_array = np.ravel(self.frame_arrays)
             pitches = self.pitch_object(combined_array)
@@ -727,7 +743,7 @@ class PitchFinder:
                     int(round(self.pitch_object.get_confidence() * 10))):
                 self.most_pitches.append(self.midify_pitch(pitches))
             self.pitch_count += 1
-            if self.pitch_count == int(options.settings['pcount']):
+            if self.pitch_count == self.count:
                 self.pitch_count = 0
                 most_pitch, foo = Counter(self.most_pitches).most_common(1)[0]
                 if most_pitch != self.last_pitch:
@@ -761,20 +777,18 @@ class PitchFinder:
                     self.last_pitch = most_pitch
                 self.most_pitches = [-1]
 
-    @staticmethod
-    def midify_pitch(_pitch):
+    def midify_pitch(self, _pitch):
         _pitch = int(round(_pitch[0]))
         if _pitch <= 0:
             _pitch = -1
         if _pitch > 127:
             _pitch = -1
-        if int(options.settings['plowcutoff']) > _pitch > int(
-                options.settings['phighcutoff']):
+        if self.low_cutoff > _pitch > self.high_cutoff:
             _pitch = -1
-        if options.settings['pfoldoctaves'] == 'True':
+        if self.fold_octaves:
             if 0 <= _pitch <= 120:
                 _pitch %= 12
-                _pitch += int(options.settings['pnumoffset'])
+                _pitch += self.num_offset
             else:
                 _pitch = -1
 
@@ -790,7 +804,7 @@ class MidiProcessor:
 
     """
 
-    def __init__(self):
+    def __init__(self, options):
         self.midi_outport = None
         self.sysex_prefix = []
         for manf_byte in options.settings['sysexmanf'].split(' '):
@@ -839,13 +853,13 @@ class MidiProcessor:
             self.midi_outport.send(mido_message)
         if self.stdout:
             if self.stdoutformat == 0:
-                print (mido_message)
+                print(mido_message)
             elif self.stdoutformat == 1:
                 sys.stdout.write(str(mido_message.bytes()))
             elif self.stdoutformat == 2:
                 sys.stdout.write(mido_message.bin())
             elif self.stdoutformat == 3:
-                sys.stdout.write(mido_message.hex()+' ')
+                sys.stdout.write(mido_message.hex() + ' ')
 
 
 class ProcessAudio:
@@ -858,8 +872,8 @@ class ProcessAudio:
 
     """
 
-    def __init__(self):
-        self.midi_processor = MidiProcessor()
+    def __init__(self, options):
+        self.midi_processor = MidiProcessor(options)
         if options.settings['midiout']:
             if options.settings['outport'] == 'default':
                 available_ports = mido.get_output_names()
@@ -872,30 +886,36 @@ class ProcessAudio:
                     options.settings['outport'])
 
         if options.settings['getbeats'] == 'True':
-            self.beat_finder = BeatFinder()
+            self.beat_finder = BeatFinder(options)
             self.beat_finder.midi_processor = self.midi_processor
         else:
             self.beat_finder = None
         if options.settings['gettempo'] == 'True':
-            self.tempo_finder = TempoFinder()
+            self.tempo_finder = TempoFinder(options)
             self.tempo_finder.midi_processor = self.midi_processor
         else:
             self.tempo_finder = None
         if options.settings['getrms'] == 'True':
-            self.rms_finder = RMSFinder()
+            self.rms_finder = RMSFinder(options)
             self.rms_finder.midi_processor = self.midi_processor
         else:
             self.rms_finder = None
         if options.settings['getfrequencies'] == 'True':
-            self.frequencies_finder = FrequenciesFinder()
+            self.frequencies_finder = FrequenciesFinder(options)
             self.frequencies_finder.midi_processor = self.midi_processor
         else:
             self.frequencies_finder = None
         if options.settings['getpitch'] == 'True':
-            self.pitch_finder = PitchFinder()
+            self.pitch_finder = PitchFinder(options)
             self.pitch_finder.midi_processor = self.midi_processor
         else:
             self.pitch_finder = None
+        if options.settings['inputdevice'] == 'default':
+            options.settings['inputdevice'] = sd.default.device['input']
+        self.input_device = options.settings['inputdevice']
+        self.channels = int(options.settings['channels'])
+        self.blocksize = int(options.settings['framesize'])
+        self.samplerate = int(options.settings['samplerate'])
 
     def callback(self, data, ignore_frames, ignore_time, ignore_status):
         if any(data):
@@ -911,13 +931,11 @@ class ProcessAudio:
                 self.pitch_finder.add_frame(data[:, 0])
 
     def start(self):
-        if options.settings['inputdevice'] == 'default':
-            options.settings['inputdevice'] = sd.default.device['input']
-        with sd.InputStream(device=options.settings['inputdevice'],
-                            channels=int(options.settings['channels']),
+        with sd.InputStream(device=self.input_device,
+                            channels=self.channels,
                             callback=self.callback,
-                            blocksize=int(options.settings['framesize']),
-                            samplerate=int(options.settings['samplerate'])):
+                            blocksize=self.blocksize,
+                            samplerate=self.samplerate):
             while True:
                 pass
 
@@ -930,22 +948,22 @@ if __name__ == '__main__':
     # information, do that then quit.
     #
     # Otherwise, start the ProcessAudio class and get out of the way.
-    options = Options()
-    if options.settings['writeinifile']:
-        options.write_options_ini()
+    main_options = Options()
+    if main_options.settings['writeinifile']:
+        main_options.write_options_ini()
         quit()
-    elif options.settings['listsounddevices'] or options.settings[
+    elif main_options.settings['listsounddevices'] or main_options.settings[
         'listmidiports']:
-        if options.settings['listsounddevices']:
+        if main_options.settings['listsounddevices']:
             print("\nAvailable sound devices:")
             print(sd.query_devices())
-        if options.settings['listmidiports']:
+        if main_options.settings['listmidiports']:
             print("\nAvailable MIDI ports:")
             print("\n".join(mido.get_output_names()))
         print("")
         quit()
     print("Control-C to quit")
-    process_audio = ProcessAudio()
+    process_audio = ProcessAudio(main_options)
     process_audio.start()
     while True:
         time.sleep(.1)
