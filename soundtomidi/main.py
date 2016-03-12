@@ -27,13 +27,16 @@ Usage:
 
 Options:
   -h --help                     Show this screen.
+                                Quits after.
   --listsounddevices            List available sound devices.
+                                Quits after.
   --listmidiports               List MIDI ports.
+                                Quits after.
   --writeinifile                Write options to ini file, as specified by
                                 inifile option. If the file already present,
                                 a backup is made of original.
   --inifile=FILE                Name of options settings file.
-                                [default: audioprocessor.ini]
+                                [default: soundtomidi.ini]
   --inputdevice=DEVICE          ID of the sound input device. System default
                                 audio input device will be used if not
                                 specified.
@@ -43,8 +46,9 @@ Options:
   --samplerate=SAMPLERATE       Capture rate for audio samples.
                                 [default: 44100]
   --framesize=FRAMESIZE         Size of each frame captured.
+                                [default: 512]
   --stdout=STDOUT               Echo message to standard out.
-                                [default: True]
+                                [default: False]
   --stdoutformat=STDOUTFORMAT   Format for standard out messages. Options are
                                 "verbose", "bytes", "bin" or "hex".
                                 [default: verbose]
@@ -217,6 +221,7 @@ from __future__ import division
 from docopt import docopt
 import configparser
 import os.path
+import sys
 import time
 import numpy as np
 import sounddevice as sd
@@ -314,12 +319,6 @@ class Options:
         config.set('frequencies', 'fbuckets', self.settings['fbuckets'])
         config.set('frequencies', 'fsysexnum', self.settings['fsysexnum'])
         config.set('frequencies', 'fgraceful', self.settings['fgraceful'])
-        config.set('frequencies', 'frmscontrolnum',
-                   self.settings['frmscontrolnum'])
-        config.set('frequencies', 'frmssysexnum',
-                   self.settings['frmssysexnum'])
-        config.set('frequencies', 'frmsgraceful',
-                   self.settings['frmsgraceful'])
         config.add_section('pitch')
         config.set('pitch', 'getpitch', self.settings['getpitch'])
         config.set('pitch', 'palg', self.settings['palg'])
@@ -360,7 +359,8 @@ class TempoFinder:
     wrong), which is the default for sysex messages. The BPM is multiplied
     by 10, rounded, then bit shifted across two bytes. On the receiving end,
     reassemble to value like this:
-        (first_data_byte*128)+second_data_byte) / 10.0
+
+    (first_data_byte*128)+second_data_byte) / 10.0
 
     """
 
@@ -526,6 +526,7 @@ class RMSFinder:
     This function does not rely on the Aubio library.
 
     """
+
     def __init__(self):
         self.midi_processor = None
         self.sysex_rms_command_array = []
@@ -585,6 +586,7 @@ class FrequenciesFinder:
     there is potential memory leak issue as described below.
 
     """
+
     def __init__(self):
         if options.settings['fbuckets'] == 'third-octave':
             options.settings['fbuckets'] = [22.4,
@@ -784,9 +786,7 @@ class MidiProcessor:
 
     Sticky object that receives messages from the various audio processing
     classes and MIDIfies them using the mido library.  Deals with
-    the custom manufacturer sysex prefix bytes, as well as the informal
-    idea of sysex messages that follow the structure-
-        MANUFACTURER    CHANNEL     COMMAND     DATA
+    the custom manufacturer sysex prefix bytes.
 
     """
 
@@ -798,6 +798,17 @@ class MidiProcessor:
         for channel in options.settings['outchannel'].split(' '):
             self.sysex_prefix.append(int(channel, 0) - 1)
         self.channel = int(options.settings['outchannel']) - 1
+        self.stdout = False
+        if options.settings['stdout'] == 'True':
+            self.stdout = True
+            if options.settings['stdoutformat'] == 'bytes':
+                self.stdoutformat = 1
+            elif options.settings['stdoutformat'] == 'bin':
+                self.stdoutformat = 2
+            elif options.settings['stdoutformat'] == 'hex':
+                self.stdoutformat = 3
+            else:
+                self.stdoutformat = 0
 
     def add_control_message(self, control, value):
         self.send_message(mido.Message('control_change',
@@ -826,6 +837,15 @@ class MidiProcessor:
     def send_message(self, mido_message):
         if self.midi_outport:
             self.midi_outport.send(mido_message)
+        if self.stdout:
+            if self.stdoutformat == 0:
+                print (mido_message)
+            elif self.stdoutformat == 1:
+                sys.stdout.write(str(mido_message.bytes()))
+            elif self.stdoutformat == 2:
+                sys.stdout.write(mido_message.bin())
+            elif self.stdoutformat == 3:
+                sys.stdout.write(mido_message.hex()+' ')
 
 
 class ProcessAudio:

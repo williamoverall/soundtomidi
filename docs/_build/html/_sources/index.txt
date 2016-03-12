@@ -7,8 +7,10 @@ Contents:
    :maxdepth: 2
 
    intro
-   architecture
    installation
+   usage
+   options
+   architecture
    credits
 
 
