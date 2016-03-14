@@ -2,4 +2,5 @@
 Options
 =======
 
-.. automodule:: soundtomidi.main
+.. automodule:: soundtomidi
+   :members:

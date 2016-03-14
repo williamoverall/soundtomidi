@@ -691,22 +691,13 @@ class PitchFinder:
     """
 
     def __init__(self, options):
-        self.pitch_object = pitch(options.settings['palg'],
-                                  int(float(options.settings['framesize']) *
-                                      float(options.settings['pframemult'])),
-                                  int(float(options.settings['framesize']) *
-                                      float(options.settings['pframemult']) *
-                                      float(options.settings['phopmult'])),
-                                  int(float(options.settings['samplerate'])))
-        self.frame_arrays = np.zeros(
-            (int(float(options.settings['pframemult'])),
-             int(float(options.settings['framesize']))),
-            dtype=np.float32)
-        self.pitch_object.set_unit('midi')
-        if options.settings['ptolerance'] != 'None':
-            self.pitch_object.set_tolerance(
-                float(options.settings['ptolerance']))
-        self.midi_processor = None
+        self.algorithm = options.settings['palg']
+        self.frame_size = float(options.settings['framesize'])
+        self.frame_multiplier = int(options.settings['pframemult'])
+        self.hop_multiplier = float(options.settings['phopmult'])
+        self.samplerate = float(options.settings['samplerate'])
+        self.tolerance = float(options.settings['ptolerance'])
+        self.sysexnumber = options.settings['psysexnum']
         self.sysex_command_array = []
         if options.settings['psysexnum'] != 'None':
             for command in options.settings['psysexnum'].split(' '):
@@ -719,11 +710,6 @@ class PitchFinder:
             self.send_note_ons = True
         if options.settings['pnoteoff'] == 'True':
             self.send_note_offs = True
-        self.frame_count = 0
-        self.most_pitches = [-1]
-        self.pitch_count = 0
-        self.last_pitch = 0
-        self.frame_multiplier = int(options.settings['pframemult'])
         self.count = int(options.settings['pcount'])
         self.low_cutoff = int(options.settings['plowcutoff'])
         self.high_cutoff = int(options.settings['phighcutoff'])
@@ -731,6 +717,26 @@ class PitchFinder:
         if options.settings['pfoldoctaves'] == 'True':
             self.fold_octaves = True
         self.num_offset = int(options.settings['pnumoffset'])
+        self.midi_processor = None
+
+        self.pitch_object = pitch(self.algorithm,
+                                  int(self.frame_size *
+                                      self.frame_multiplier),
+                                  int(self.frame_size *
+                                      self.frame_multiplier *
+                                      self.hop_multiplier),
+                                  int(self.samplerate))
+        if self.tolerance != 'None':
+            self.pitch_object.set_tolerance(self.tolerance)
+        self.pitch_object.set_unit('midi')
+        self.frame_arrays = np.zeros(
+            (int(self.frame_multiplier),
+             int(self.frame_size)),
+            dtype=np.float32)
+        self.frame_count = 0
+        self.most_pitches = [-1]
+        self.pitch_count = 0
+        self.last_pitch = 0
 
     def add_frame(self, frame_array):
         self.frame_arrays[self.frame_count] = frame_array
