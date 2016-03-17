@@ -48,7 +48,7 @@ Options:
   --framesize=FRAMESIZE         Size of each frame captured.
                                 [default: 512]
   --stdout=STDOUT               Echo message to standard out.
-                                [default: False]
+                                [default: True]
   --stdoutformat=STDOUTFORMAT   Format for standard out messages. Options are
                                 "verbose", "bytes", "bin" or "hex".
                                 [default: verbose]
@@ -64,7 +64,7 @@ Options:
                                 Int or hex values, separarated by space.
                                 [default: 0x7D]
   --gettempo=TEMPO              Get the tempo of the audio.
-                                [default: True]
+                                [default: False]
   --talg=TALG                   Aubio algorithm for determining the tempo.
                                 [default: default]
   --tframemult=TFRAMEMULT       Number of frames to use in calculation.
@@ -98,7 +98,7 @@ Options:
                                 across two 7 bit values (0x10 0x01)
                                 [default: twobytes]
   --getbeats=BEATS              Get the beats of the audio.
-                                [default: True]
+                                [default: False]
   --balg=BALG                   Aubio algorithm to use for the beat.
                                 [default: default]
   --bframemult=BFRAMEMULT       Number of frames to use in calculation.
@@ -125,7 +125,7 @@ Options:
                                 (Not yet implemented)
                                 [default: False]
   --getrms=RMS                  Get the RMS.
-                                [default: True]
+                                [default: False]
   --rframemult=FFRAMEMULT       Number of frames to use in calculation.
                                 [default: 4]
   --rhopmult=FHOPMULT           Hop size, as percent of FRAMEMULT.
@@ -147,7 +147,7 @@ Options:
                                 Set to 0.0 to turn off.
                                 [default: .5]
   --getfrequencies=FREQS        Get the strength of filtered frequencies.
-                                [default: True]
+                                [default: False]
   --falg=FALG                   Aubio algorithm to use for determining
                                 the strength of the frequencies.
                                 [default: default]
@@ -198,7 +198,7 @@ Options:
                                 [default: 127]
   --pfoldoctaves=PFOLDOCTAVES   Return just 12 note values instead of the
                                 possible 128.
-                                [default: False]
+                                [default: True]
   --pnumoffset=PNUMOFFSET       Used only with the above option. Shifts the "C"
                                 value to somewhere else, and each note above
                                 that. Middle C is "60", which is the default.
@@ -210,10 +210,10 @@ Options:
                                 [default: True]
   --pcontrolnum=PCONTROLNUM     Controller number to send pitches.
                                 If "None", no control messages will be sent.
-                                [default: 21]
+                                [default: None]
   --psysexnum=PSYSEXNUM         Prefix to send prior to sending note value.
                                 If "None", no sysex messages will be sent.
-                                [default: 0x0C]
+                                [default: None]
 
 """
 from __future__ import print_function
