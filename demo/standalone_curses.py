@@ -361,6 +361,7 @@ class MidiReceiver:
         self.pitch = Pitch()
 
     def start(self):
+        print ("Started MIDI Receiver")
         if self.midi_inport:
             with mido.open_input(self.midi_inport) as input:
                 for message in input:
@@ -397,7 +398,7 @@ class MidiReceiver:
                             self.pitch.set_last_pitch_note(message.note)
 
 
-def main(screen):
+def main():
     main_options = Options()
     if main_options.settings['writeinifile']:
         main_options.write_options_ini()
@@ -407,9 +408,9 @@ def main(screen):
         print("\n".join(mido.get_output_names()))
         print("")
         quit()
+    #screen.clear()
     midi_receiver = MidiReceiver(main_options)
-    screen.clear()
-    screen.refresh()
+    #screen.refresh()
 
     midi_receiver.start()
 
@@ -422,4 +423,5 @@ if __name__ == '__main__':
     # information, do that then quit.
     #
     # Otherwise, start the ProcessAudio class and get out of the way.
-    curses.wrapper(main)
+    #curses.wrapper(main)
+    main()
