@@ -61,9 +61,9 @@ Options:
   --pnoteoff=PNOTEOFF           Handle note off messages for audio pitch.
                                 [default: True]
   --pcontrolnum=PCONTROLNUM     Controller number to receive pitches.
-                                [default: None]
+                                [default: 21]
   --psysexnum=PSYSEXNUM         Prefix for incoming pitch sysex messages.
-                                [default: None]
+                                [default: 0x09]
 
 """
 
@@ -72,9 +72,11 @@ from __future__ import division
 from docopt import docopt
 import configparser
 import os.path
+import time
 from datetime import datetime as dt
 import mido
 import curses
+
 
 
 class Options:
@@ -142,10 +144,15 @@ class Options:
 
 class BPM:
     def __init__(self):
+        curses.init_pair(1, curses.COLOR_WHITE, curses.COLOR_YELLOW)
         self.control_window = curses.newwin(3, 20, 0, 59)
+        self.control_window.bkgd(' ', curses.color_pair(1))
         self.control_window.addstr(0, 0, "BPM (control msg)".center(20))
+        self.control_window.refresh()
         self.sysex_window = curses.newwin(3, 20, 5, 59)
+        self.sysex_window.bkgd(' ', curses.color_pair(1))
         self.sysex_window.addstr(0, 0, "BPM (sysex msg)".center(20))
+        self.sysex_window.refresh()
 
         self.control_bpm = 0
         self.sysex_bpm = 0.0
@@ -153,19 +160,26 @@ class BPM:
     def set_control_bpm(self, bpm):
         self.control_bpm = bpm + 60
         self.control_window.addstr(1, 0, str(self.control_bpm).center(20))
+        self.control_window.refresh()
 
     def set_sysex_bpm_two_bytes(self, two_byte_array):
         self.sysex_bpm = round(
             ((two_byte_array[0] * 128) + two_byte_array[1]) / 10.0, 1)
-        self.control_window.addstr(1, 0, str(self.sysex_bpm).center(20))
+        self.sysex_window.addstr(1, 0, str(self.sysex_bpm).center(20))
+        self.sysex_window.refresh()
 
 
 class Beat:
     def __init__(self):
-        self.control_window = curses.newwin(3, 50, 10, 38)
-        self.control_window.addstr(0, 0, "Beat (control msg)".center(50))
-        self.sysex_window = curses.newwin(3, 50, 14, 38)
-        self.sysex_window.addstr(0, 0, "Beat (sysex msg)".center(50))
+        curses.init_pair(2, curses.COLOR_WHITE, curses.COLOR_RED)
+        self.control_window = curses.newwin(3, 20, 10, 59)
+        self.control_window.bkgd(' ', curses.color_pair(2))
+        self.control_window.addstr(0, 0, "Beat (control msg)".center(20))
+        self.control_window.refresh()
+        self.sysex_window = curses.newwin(3, 20, 14, 59)
+        self.sysex_window.bkgd(' ', curses.color_pair(2))
+        self.sysex_window.addstr(0, 0, "Beat (sysex msg)".center(20))
+        self.sysex_window.refresh()
 
         self.control_beat_location = 0
         self.sysex_beat_location = 0
@@ -173,42 +187,59 @@ class Beat:
     def set_control_beat(self, beat_location):
         self.control_beat_location = beat_location
         self.control_window.addstr(1, 0,
-                                   str(self.control_beat_location).center(50))
+                                   str(self.control_beat_location).center(20))
+        self.control_window.refresh()
 
     def set_sysex_beat(self, beat_location_array):
         self.sysex_beat_location = beat_location_array[0]
         self.sysex_window.addstr(1, 0,
-                                 str(self.sysex_beat_location).center(50))
+                                 str(self.sysex_beat_location).center(20))
+        self.sysex_window.refresh()
 
 
 class RMS:
     def __init__(self):
-        self.control_window = curses.newwin(3, 20, 0, 38)
+        curses.init_pair(3, curses.COLOR_WHITE, curses.COLOR_GREEN)
+        self.control_window = curses.newwin(4, 20, 0, 38)
+        self.control_window.bkgd(' ', curses.color_pair(3))
         self.control_window.addstr(0, 0, "RMS (control msg)".center(20))
-        self.sysex_window = curses.newwin(3, 20, 5, 38)
+        self.control_window.refresh()
+        self.sysex_window = curses.newwin(4, 20, 5, 38)
+        self.sysex_window.bkgd(' ', curses.color_pair(3))
         self.sysex_window.addstr(0, 0, "RMS (sysex msg)".center(20))
+        self.sysex_window.refresh()
+        self.segments = 20.0 / 127.0
         self.control_rms = 0
         self.sysex_rms = 0
 
     def set_control_rms(self, rms):
         self.control_rms = rms
-        self.control_window.addstr(1, 0, str(self.control_rms).center(20))
+        rms_string = "*" * (int(self.control_rms*self.segments))
+        self.control_window.addstr(1, 0, rms_string.center(20))
+        self.control_window.addstr(2, 0, str(self.control_rms).center(20))
+        self.control_window.refresh()
 
     def set_sysex_rms(self, rms_array):
         self.sysex_rms = rms_array[0]
-        self.sysex_window.addstr(1, 0, str(self.sysex_rms).center(20))
+        rms_string = "*" * (int(self.sysex_rms*self.segments))
+        self.sysex_window.addstr(1, 0, rms_string.center(20))
+        self.sysex_window.addstr(2, 0, str(self.sysex_rms).center(20))
+        self.sysex_window.refresh()
 
 
 class Frequencies:
     def __init__(self):
+        curses.init_pair(4, curses.COLOR_WHITE, curses.COLOR_CYAN)
         self.sysex_window = curses.newwin(9, 37, 0, 0)
+        self.sysex_window.bkgd(' ', curses.color_pair(4))
         self.sysex_window.addstr(0, 0, "Frequencies (sysex msg)".center(37))
+        self.sysex_window.refresh()
         self.segments = 127.0 / 8.0
         self.frequencies = []
 
     def set_sysex_frequencies(self, frequency_array):
         self.frequencies = frequency_array
-        column = (37 - len(self.frequencies)) / 2
+        column = int((37 - len(self.frequencies)) / 2)
         for value in self.frequencies:
             for x in range(8):
                 if value >= self.segments * x:
@@ -216,42 +247,52 @@ class Frequencies:
                 else:
                     self.sysex_window.addstr(8 - x, column, " ")
             column += 1
+        self.sysex_window.refresh()
 
 
 class Pitch:
     def __init__(self):
-        self.note_window = curses.newwin(12, 11, 10, 0)
+        curses.init_pair(5, curses.COLOR_WHITE, curses.COLOR_BLUE)
+        self.note_window = curses.newwin(13, 11, 10, 0)
+        self.note_window.bkgd(' ', curses.color_pair(5))
         self.note_window.addstr(0, 0, "Pitch (n)".center(11))
-        self.control_window = curses.newwin(12, 11, 10, 13)
+        self.note_window.refresh()
+        self.control_window = curses.newwin(13, 11, 10, 16)
+        self.control_window.bkgd(' ', curses.color_pair(5))
         self.control_window.addstr(0, 0, "Pitch (c)".center(11))
-        self.sysex_window = curses.newwin(12, 11, 10, 26)
+        self.control_window.refresh()
+        self.sysex_window = curses.newwin(13, 11, 10, 32)
+        self.sysex_window.bkgd(' ', curses.color_pair(5))
         self.sysex_window.addstr(0, 0, "Pitch (s)".center(11))
-        #self.margin_window1 = curses.newwin(12, 2, 10, 11)
-        #self.margin_window1.addstr(1, 0, "B ")
-        #self.margin_window1.addstr(2, 0, "A#")
-        #self.margin_window1.addstr(3, 0, "A ")
-        #self.margin_window1.addstr(4, 0, "G#")
-        #self.margin_window1.addstr(5, 0, "G ")
-        #self.margin_window1.addstr(6, 0, "F#")
-        #self.margin_window1.addstr(7, 0, "F ")
-        #self.margin_window1.addstr(8, 0, "E ")
-        #self.margin_window1.addstr(9, 0, "D#")
-        #self.margin_window1.addstr(10, 0, "D ")
-        #self.margin_window1.addstr(11, 0, "C#")
-        #self.margin_window1.addstr(12, 0, "C ")
-        #self.margin_window2 = curses.newwin(13, 2, 10, 24)
-        #self.margin_window2.addstr(1, 0, "B ")
-        #self.margin_window2.addstr(2, 0, "A#")
-        #self.margin_window2.addstr(3, 0, "A ")
-        #self.margin_window2.addstr(4, 0, "G#")
-        #self.margin_window2.addstr(5, 0, "G ")
-        #self.margin_window2.addstr(6, 0, "F#")
-        #self.margin_window2.addstr(7, 0, "F ")
-        #self.margin_window2.addstr(8, 0, "E ")
-        #self.margin_window2.addstr(9, 0, "D#")
-        #self.margin_window2.addstr(10, 0, "D ")
-        #self.margin_window2.addstr(11, 0, "C#")
-        #self.margin_window2.addstr(12, 0, "C ")
+        self.sysex_window.refresh()
+        self.margin_window1 = curses.newwin(14, 2, 10, 13)
+        self.margin_window1.addstr(1, 0, "B ")
+        self.margin_window1.addstr(2, 0, "A#")
+        self.margin_window1.addstr(3, 0, "A ")
+        self.margin_window1.addstr(4, 0, "G#")
+        self.margin_window1.addstr(5, 0, "G ")
+        self.margin_window1.addstr(6, 0, "F#")
+        self.margin_window1.addstr(7, 0, "F ")
+        self.margin_window1.addstr(8, 0, "E ")
+        self.margin_window1.addstr(9, 0, "D#")
+        self.margin_window1.addstr(10, 0, "D ")
+        self.margin_window1.addstr(11, 0, "C#")
+        self.margin_window1.addstr(12, 0, "C ")
+        self.margin_window1.refresh()
+        self.margin_window2 = curses.newwin(14, 2, 10, 29)
+        self.margin_window2.addstr(1, 0, "B ")
+        self.margin_window2.addstr(2, 0, "A#")
+        self.margin_window2.addstr(3, 0, "A ")
+        self.margin_window2.addstr(4, 0, "G#")
+        self.margin_window2.addstr(5, 0, "G ")
+        self.margin_window2.addstr(6, 0, "F#")
+        self.margin_window2.addstr(7, 0, "F ")
+        self.margin_window2.addstr(8, 0, "E ")
+        self.margin_window2.addstr(9, 0, "D#")
+        self.margin_window2.addstr(10, 0, "D ")
+        self.margin_window2.addstr(11, 0, "C#")
+        self.margin_window2.addstr(12, 0, "C ")
+        self.margin_window2.refresh()
         self.pitch_note = 0
         self.last_pitch_note = 0
         self.pitch_control = 0
@@ -263,38 +304,42 @@ class Pitch:
         self.pitch_note = pitch
         pitch_note_octave = int(self.pitch_note / 12)
         pitch_note_note = self.pitch_note - (12 * pitch_note_octave)
-        self.note_window.addstr(13 - pitch_note_note, pitch_note_octave, "*")
+        self.note_window.addstr(12 - pitch_note_note, pitch_note_octave, "*")
+        self.note_window.refresh()
 
     def set_last_note_pitch(self, last_pitch):
         self.last_pitch_note = last_pitch
         pitch_note_octave = int(self.last_pitch_note / 12)
         pitch_note_note = self.last_pitch_note - (12 * pitch_note_octave)
-        self.note_window.addstr(13 - pitch_note_note, pitch_note_octave, "-")
+        self.note_window.addstr(12 - pitch_note_note, pitch_note_octave, "-")
+        self.note_window.refresh()
 
     def set_control_pitch(self, pitch):
         self.last_pitch_control = self.pitch_control
         self.pitch_control = pitch
         pitch_control_octave = int(self.pitch_control / 12)
         pitch_control_note = self.pitch_control - (12 * pitch_control_octave)
-        self.note_window.addstr(13 - pitch_control_note, pitch_control_octave,
+        self.control_window.addstr(12 - pitch_control_note, pitch_control_octave,
                                 "*")
         last_pitch_control_octave = int(self.last_pitch_control / 12)
         last_pitch_control_note = self.last_pitch_control - (
         12 * last_pitch_control_octave)
-        self.note_window.addstr(13 - last_pitch_control_note,
-                                last_pitch_control_octave, "*")
+        self.control_window.addstr(12 - last_pitch_control_note,
+                                last_pitch_control_octave, "-")
+        self.control_window.refresh()
 
     def set_sysex_pitch(self, pitch_array):
         self.last_pitch_sysex = self.pitch_sysex
         self.pitch_sysex = pitch_array[0]
         pitch_sysex_octave = int(self.pitch_sysex / 12)
         pitch_sysex_note = self.pitch_sysex - (12 * pitch_sysex_octave)
-        self.note_window.addstr(13 - pitch_sysex_note, pitch_sysex_octave, "*")
+        self.sysex_window.addstr(12 - pitch_sysex_note, pitch_sysex_octave, "*")
         last_pitch_sysex_octave = int(self.last_pitch_sysex / 12)
         last_pitch_sysex_note = self.last_pitch_sysex - (
             12 * last_pitch_sysex_octave)
-        self.note_window.addstr(13 - last_pitch_sysex_note,
-                                last_pitch_sysex_octave, "*")
+        self.sysex_window.addstr(12 - last_pitch_sysex_note,
+                                last_pitch_sysex_octave, "-")
+        self.sysex_window.refresh()
 
 
 class MidiReceiver:
@@ -304,10 +349,12 @@ class MidiReceiver:
             # Get first inputname
             available_ports = mido.get_output_names()
             if available_ports:
-                options.settings['inport'] = available_ports[0]
+                self.midi_inport = available_ports[0]
             else:
                 print("No input name passed in, none found, turning midi off")
-                options.settings['inport'] = ""
+                self.midi_inport = None
+        else:
+            self.midi_inport = options.settings['inport']
 
         self.sysex_prefix = []
         for manf_byte in options.settings['sysexmanf'].split(' '):
@@ -334,23 +381,23 @@ class MidiReceiver:
             self.pcontrolnum = -1
 
         try:
-            self.bsysexnum = int(options.settings['bsysexnum'])
+            self.bsysexnum = int(options.settings['bsysexnum'], 0)
         except ValueError:
             self.bsysexnum = -1
         try:
-            self.tsysexnum = int(options.settings['tsysexnum'])
+            self.tsysexnum = int(options.settings['tsysexnum'], 0)
         except ValueError:
             self.tsysexnum = -1
         try:
-            self.rsysexnum = int(options.settings['rsysexnum'])
+            self.rsysexnum = int(options.settings['rsysexnum'], 0)
         except ValueError:
             self.rsysexnum = -1
         try:
-            self.fsysexnum = int(options.settings['fsysexnum'])
+            self.fsysexnum = int(options.settings['fsysexnum'], 0)
         except ValueError:
             self.fsysexnum = -1
         try:
-            self.psysexnum = int(options.settings['psysexnum'])
+            self.psysexnum = int(options.settings['psysexnum'], 0)
         except ValueError:
             self.psysexnum = -1
 
@@ -361,7 +408,6 @@ class MidiReceiver:
         self.pitch = Pitch()
 
     def start(self):
-        print ("Started MIDI Receiver")
         if self.midi_inport:
             with mido.open_input(self.midi_inport) as input:
                 for message in input:
@@ -377,28 +423,27 @@ class MidiReceiver:
                                 self.pitch.set_control_pitch(message.value)
                     elif message.type == 'sysex':
                         prefix = list(message.data[0:len(self.sysex_prefix)])
-                        command = list(message.data[len(self.sysex_prefix):len(
-                            self.sysex_prefix) + 1])
+                        command = message.data[len(self.sysex_prefix)]
                         data = list(message.data[len(self.sysex_prefix) + 1:])
                         if cmp(prefix, self.sysex_prefix) == 0:
-                            if command[0] == self.bsysexnum:
+                            if command == self.bsysexnum:
                                 self.beat.set_sysex_beat(data)
-                            elif command[0] == self.tsysexnum:
+                            elif command == self.tsysexnum:
                                 self.bpm.set_sysex_bpm_two_bytes(data)
-                            elif command[0] == self.rsysexnum:
+                            elif command == self.rsysexnum:
                                 self.rms.set_sysex_rms(data)
-                            elif command[0] == self.fsysexnum:
+                            elif command == self.fsysexnum:
                                 self.frequencies.set_sysex_frequencies(data)
-                            elif command[0] == self.psysexnum:
+                            elif command == self.psysexnum:
                                 self.pitch.set_sysex_pitch(data)
                     elif message.channel == self.channel:
                         if message.type == 'note_on':
                             self.pitch.set_note_pitch(message.note)
                         elif message.type == 'note_off':
-                            self.pitch.set_last_pitch_note(message.note)
+                            self.pitch.set_last_note_pitch(message.note)
 
 
-def main():
+def main(screen):
     main_options = Options()
     if main_options.settings['writeinifile']:
         main_options.write_options_ini()
@@ -423,5 +468,7 @@ if __name__ == '__main__':
     # information, do that then quit.
     #
     # Otherwise, start the ProcessAudio class and get out of the way.
-    #curses.wrapper(main)
-    main()
+    curses.wrapper(main)
+    while True:
+        time.sleep(.1)
+    #main()
