@@ -144,14 +144,14 @@ class Options:
 
 class BPM:
     def __init__(self):
-        curses.init_pair(1, curses.COLOR_WHITE, curses.COLOR_YELLOW)
-        self.control_window = curses.newwin(3, 20, 0, 59)
+        curses.init_pair(1, curses.COLOR_WHITE, curses.COLOR_CYAN)
+        self.control_window = curses.newwin(3, 19, 10, 60)
         self.control_window.bkgd(' ', curses.color_pair(1))
-        self.control_window.addstr(0, 0, "BPM (control msg)".center(20))
+        self.control_window.addstr(0, 0, "BPM (control msg)".center(19),curses.A_REVERSE)
         self.control_window.refresh()
-        self.sysex_window = curses.newwin(3, 20, 5, 59)
+        self.sysex_window = curses.newwin(3, 19, 13, 60)
         self.sysex_window.bkgd(' ', curses.color_pair(1))
-        self.sysex_window.addstr(0, 0, "BPM (sysex msg)".center(20))
+        self.sysex_window.addstr(0, 0, "BPM (sysex msg)".center(19),curses.A_REVERSE)
         self.sysex_window.refresh()
 
         self.control_bpm = 0
@@ -159,26 +159,26 @@ class BPM:
 
     def set_control_bpm(self, bpm):
         self.control_bpm = bpm + 60
-        self.control_window.addstr(1, 0, str(self.control_bpm).center(20))
+        self.control_window.addstr(1, 0, str(self.control_bpm).center(19))
         self.control_window.refresh()
 
     def set_sysex_bpm_two_bytes(self, two_byte_array):
         self.sysex_bpm = round(
             ((two_byte_array[0] * 128) + two_byte_array[1]) / 10.0, 1)
-        self.sysex_window.addstr(1, 0, str(self.sysex_bpm).center(20))
+        self.sysex_window.addstr(1, 0, str(self.sysex_bpm).center(19))
         self.sysex_window.refresh()
 
 
 class Beat:
     def __init__(self):
         curses.init_pair(2, curses.COLOR_WHITE, curses.COLOR_RED)
-        self.control_window = curses.newwin(3, 20, 10, 59)
+        self.control_window = curses.newwin(3, 19, 17, 60)
         self.control_window.bkgd(' ', curses.color_pair(2))
-        self.control_window.addstr(0, 0, "Beat (control msg)".center(20))
+        self.control_window.addstr(0, 0, "Beat (control msg)".center(19),curses.A_REVERSE)
         self.control_window.refresh()
-        self.sysex_window = curses.newwin(3, 20, 14, 59)
+        self.sysex_window = curses.newwin(3, 19, 20, 60)
         self.sysex_window.bkgd(' ', curses.color_pair(2))
-        self.sysex_window.addstr(0, 0, "Beat (sysex msg)".center(20))
+        self.sysex_window.addstr(0, 0, "Beat (sysex msg)".center(19),curses.A_REVERSE)
         self.sysex_window.refresh()
 
         self.control_beat_location = 0
@@ -187,65 +187,65 @@ class Beat:
     def set_control_beat(self, beat_location):
         self.control_beat_location = beat_location
         self.control_window.addstr(1, 0,
-                                   str(self.control_beat_location).center(20))
+                                   str(self.control_beat_location).center(19))
         self.control_window.refresh()
 
     def set_sysex_beat(self, beat_location_array):
         self.sysex_beat_location = beat_location_array[0]
         self.sysex_window.addstr(1, 0,
-                                 str(self.sysex_beat_location).center(20))
+                                 str(self.sysex_beat_location).center(19))
         self.sysex_window.refresh()
 
 
 class RMS:
     def __init__(self):
         curses.init_pair(3, curses.COLOR_WHITE, curses.COLOR_GREEN)
-        self.control_window = curses.newwin(4, 20, 0, 38)
+        self.control_window = curses.newwin(4, 19, 1, 60)
         self.control_window.bkgd(' ', curses.color_pair(3))
-        self.control_window.addstr(0, 0, "RMS (control msg)".center(20))
+        self.control_window.addstr(0, 0, "RMS (control msg)".center(19),curses.A_REVERSE)
         self.control_window.refresh()
-        self.sysex_window = curses.newwin(4, 20, 5, 38)
+        self.sysex_window = curses.newwin(4, 19, 5, 60)
         self.sysex_window.bkgd(' ', curses.color_pair(3))
-        self.sysex_window.addstr(0, 0, "RMS (sysex msg)".center(20))
+        self.sysex_window.addstr(0, 0, "RMS (sysex msg)".center(19),curses.A_REVERSE)
         self.sysex_window.refresh()
-        self.segments = 20.0 / 127.0
+        self.segments = 19.0 / 127.0
         self.control_rms = 0
         self.sysex_rms = 0
 
     def set_control_rms(self, rms):
         self.control_rms = rms
         rms_string = "*" * (int(self.control_rms*self.segments))
-        self.control_window.addstr(1, 0, rms_string.center(20))
-        self.control_window.addstr(2, 0, str(self.control_rms).center(20))
+        self.control_window.addstr(1, 0, rms_string.center(19))
+        self.control_window.addstr(2, 0, str(self.control_rms).center(19))
         self.control_window.refresh()
 
     def set_sysex_rms(self, rms_array):
         self.sysex_rms = rms_array[0]
         rms_string = "*" * (int(self.sysex_rms*self.segments))
-        self.sysex_window.addstr(1, 0, rms_string.center(20))
-        self.sysex_window.addstr(2, 0, str(self.sysex_rms).center(20))
+        self.sysex_window.addstr(1, 0, rms_string.center(19))
+        self.sysex_window.addstr(2, 0, str(self.sysex_rms).center(19))
         self.sysex_window.refresh()
 
 
 class Frequencies:
     def __init__(self):
-        curses.init_pair(4, curses.COLOR_WHITE, curses.COLOR_CYAN)
-        self.sysex_window = curses.newwin(9, 37, 0, 0)
+        curses.init_pair(4, curses.COLOR_WHITE, curses.COLOR_MAGENTA)
+        self.sysex_window = curses.newwin(8, 57, 1, 1)
         self.sysex_window.bkgd(' ', curses.color_pair(4))
-        self.sysex_window.addstr(0, 0, "Frequencies (sysex msg)".center(37))
+        self.sysex_window.addstr(0, 0, "Frequencies (sysex msg)".center(57),curses.A_REVERSE)
         self.sysex_window.refresh()
-        self.segments = 127.0 / 8.0
+        self.segments = 127.0 / 7.0
         self.frequencies = []
 
     def set_sysex_frequencies(self, frequency_array):
         self.frequencies = frequency_array
-        column = int((37 - len(self.frequencies)) / 2)
+        column = int((57 - len(self.frequencies)) / 2)
         for value in self.frequencies:
-            for x in range(8):
+            for x in range(7):
                 if value >= self.segments * x:
-                    self.sysex_window.addstr(8 - x, column, "*")
+                    self.sysex_window.addstr(7 - x, column, "*")
                 else:
-                    self.sysex_window.addstr(8 - x, column, " ")
+                    self.sysex_window.addstr(7 - x, column, " ")
             column += 1
         self.sysex_window.refresh()
 
@@ -253,19 +253,19 @@ class Frequencies:
 class Pitch:
     def __init__(self):
         curses.init_pair(5, curses.COLOR_WHITE, curses.COLOR_BLUE)
-        self.note_window = curses.newwin(13, 11, 10, 0)
+        self.note_window = curses.newwin(13, 15, 10, 1)
         self.note_window.bkgd(' ', curses.color_pair(5))
-        self.note_window.addstr(0, 0, "Pitch (n)".center(11))
+        self.note_window.addstr(0, 0, "Pitch (n)".center(15),curses.A_REVERSE)
         self.note_window.refresh()
-        self.control_window = curses.newwin(13, 11, 10, 16)
+        self.control_window = curses.newwin(13, 15, 10, 22)
         self.control_window.bkgd(' ', curses.color_pair(5))
-        self.control_window.addstr(0, 0, "Pitch (c)".center(11))
+        self.control_window.addstr(0, 0, "Pitch (c)".center(15),curses.A_REVERSE)
         self.control_window.refresh()
-        self.sysex_window = curses.newwin(13, 11, 10, 32)
+        self.sysex_window = curses.newwin(13, 15, 10, 43)
         self.sysex_window.bkgd(' ', curses.color_pair(5))
-        self.sysex_window.addstr(0, 0, "Pitch (s)".center(11))
+        self.sysex_window.addstr(0, 0, "Pitch (s)".center(15),curses.A_REVERSE)
         self.sysex_window.refresh()
-        self.margin_window1 = curses.newwin(14, 2, 10, 13)
+        self.margin_window1 = curses.newwin(14, 2, 10, 18)
         self.margin_window1.addstr(1, 0, "B ")
         self.margin_window1.addstr(2, 0, "A#")
         self.margin_window1.addstr(3, 0, "A ")
@@ -279,7 +279,7 @@ class Pitch:
         self.margin_window1.addstr(11, 0, "C#")
         self.margin_window1.addstr(12, 0, "C ")
         self.margin_window1.refresh()
-        self.margin_window2 = curses.newwin(14, 2, 10, 29)
+        self.margin_window2 = curses.newwin(14, 2, 10, 39)
         self.margin_window2.addstr(1, 0, "B ")
         self.margin_window2.addstr(2, 0, "A#")
         self.margin_window2.addstr(3, 0, "A ")
@@ -311,7 +311,7 @@ class Pitch:
         self.last_pitch_note = last_pitch
         pitch_note_octave = int(self.last_pitch_note / 12)
         pitch_note_note = self.last_pitch_note - (12 * pitch_note_octave)
-        self.note_window.addstr(12 - pitch_note_note, pitch_note_octave, "-")
+        self.note_window.addstr(12 - pitch_note_note, pitch_note_octave, " ")
         self.note_window.refresh()
 
     def set_control_pitch(self, pitch):
@@ -325,7 +325,7 @@ class Pitch:
         last_pitch_control_note = self.last_pitch_control - (
         12 * last_pitch_control_octave)
         self.control_window.addstr(12 - last_pitch_control_note,
-                                last_pitch_control_octave, "-")
+                                last_pitch_control_octave, " ")
         self.control_window.refresh()
 
     def set_sysex_pitch(self, pitch_array):
@@ -338,7 +338,7 @@ class Pitch:
         last_pitch_sysex_note = self.last_pitch_sysex - (
             12 * last_pitch_sysex_octave)
         self.sysex_window.addstr(12 - last_pitch_sysex_note,
-                                last_pitch_sysex_octave, "-")
+                                last_pitch_sysex_octave, " ")
         self.sysex_window.refresh()
 
 

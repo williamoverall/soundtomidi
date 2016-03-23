@@ -48,7 +48,7 @@ Options:
   --framesize=FRAMESIZE         Size of each frame captured.
                                 [default: 512]
   --stdout=STDOUT               Echo message to standard out.
-                                [default: True]
+                                [default: False]
   --stdoutformat=STDOUTFORMAT   Format for standard out messages. Options are
                                 "verbose", "bytes", "bin" or "hex".
                                 [default: verbose]
