@@ -1,15 +1,20 @@
-<MainScreen>:
+<RootLayout>:
+    screen_manager: screen_manager
+    orientation: 'vertical'
     BoxLayout:
-        Button:
-            text: 'Goto settings'
-            on_press: root.manager.current = 'settings'
-        Button:
-            text: 'Quit'
-
-<SettingsScreen>:
+        size_hint: 1, .05
+        Spinner:
+            size_hint: .8, 1
+            width: '108sp'
+            text: 'Spinner'
+            values: [screen.name for screen in screen_manager.screens]
+            on_text: root.show_kv(*args)
     BoxLayout:
-        Button:
-            text: 'My settings button'
-        Button:
-            text: 'Back to main'
-            on_press: root.manager.current = 'main'
+        ScreenManager:
+            id: screen_manager
+            Screen:
+                name: "Monitor"
+                #MonitorContainer:
+            Screen:
+                name: "Settings"
+                #SettingsContainer:
