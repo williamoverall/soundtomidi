@@ -1,20 +1,233 @@
+<Widget>:
+    #canvas.after:
+    #    Line:
+    #        rectangle: self.x+1,self.y+1,self.width-1,self.height-1
+    #        dash_offset: 5
+    #        dash_length: 3
+
+<MonitorScreen@Screen>:
+    name: "Beats Monitor"
+    BoxLayout:
+        orientation: 'vertical'
+        Label:
+            size_hint_y: .35
+            text: "Frequencies"
+        Label:
+            size_hint_y: .15
+            text: "RMS"
+        BoxLayout:
+            orientation: 'horizontal'
+            BoxLayout:
+                orientation: 'vertical'
+                size_hint_x: .25
+                Label:
+                    text: "BPM"
+                    size_hint_y: .25
+                BoxLayout:
+                    orientation: 'vertical'
+                    padding: 15,0,15,15
+                    RelativeLayout:
+                        BoxLayout:
+                            orientation: 'horizontal'
+                            Button:
+                                on_release: root.bpm_multiply(2.0)
+                                text: '2x'
+                                group: 'bpmspeedadjust'
+                            Button:
+                                text: 'x'
+                                state: 'down'
+                                on_release: root.bpm_multiply(1.0)
+                                group: 'bpmspeedadjust'
+                            Button:
+                                text: 'x/2'
+                                on_release: root.bpm_multiply(0.5)
+                                group: 'bpmspeedadjust'
+                    RelativeLayout:
+                    RelativeLayout:
+                        BoxLayout:
+                            orientation: 'horizontal'
+                            ToggleButton:
+                                group: 'songsection'
+                                on_release: root.set_song_section('intro',1)
+                            ToggleButton:
+                                group: 'songsection'
+                                on_release: root.set_song_section('intro',2)
+                            ToggleButton:
+                                group: 'songsection'
+                                on_release: root.set_song_section('intro',3)
+                        Label:
+                            text: 'Intro'
+                    RelativeLayout:
+                        BoxLayout:
+                            orientation: 'horizontal'
+                            ToggleButton:
+                                group: 'songsection'
+                                on_release: root.set_song_section('verse',1)
+                            ToggleButton:
+                                group: 'songsection'
+                                on_release: root.set_song_section('verse',2)
+                            ToggleButton:
+                                group: 'songsection'
+                                on_release: root.set_song_section('verse',3)
+                        Label:
+                            text: 'Verse'
+                    RelativeLayout:
+                        BoxLayout:
+                            orientation: 'horizontal'
+                            ToggleButton:
+                                group: 'songsection'
+                                on_release: root.set_song_section('chorus',1)
+                            ToggleButton:
+                                group: 'songsection'
+                                on_release: root.set_song_section('chorus',2)
+                            ToggleButton:
+                                group: 'songsection'
+                                on_release: root.set_song_section('chorus',3)
+                        Label:
+                            text: 'Chorus'
+                    RelativeLayout:
+                        BoxLayout:
+                            orientation: 'horizontal'
+                            ToggleButton:
+                                group: 'songsection'
+                                on_release: root.set_song_section('breakdown',1)
+                            ToggleButton:
+                                group: 'songsection'
+                                on_release: root.set_song_section('breakdown',2)
+                            ToggleButton:
+                                group: 'songsection'
+                                on_release: root.set_song_section('breakdown',3)
+                        Label:
+                            text: 'Breakdown'
+                    RelativeLayout:
+                        BoxLayout:
+                            orientation: 'horizontal'
+                            ToggleButton:
+                                group: 'songsection'
+                                on_release: root.set_song_section('bridge',1)
+                            ToggleButton:
+                                group: 'songsection'
+                                on_release: root.set_song_section('bridge',2)
+                            ToggleButton:
+                                group: 'songsection'
+                                on_release: root.set_song_section('bridge',3)
+                        Label:
+                            text: 'Bridge'
+                    RelativeLayout:
+                        BoxLayout:
+                            orientation: 'horizontal'
+                            ToggleButton:
+                                group: 'songsection'
+                                on_release: root.set_song_section('outro',1)
+                            ToggleButton:
+                                group: 'songsection'
+                                on_release: root.set_song_section('outro',2)
+                            ToggleButton:
+                                group: 'songsection'
+                                on_release: root.set_song_section('outro',3)
+                        Label:
+                            text: 'Outro'
+            BoxLayout:
+                orientation: 'vertical'
+                size_hint_x: .5
+                Label:
+                    text: 'pitch'
+                    size_hint_y: .5
+                Label:
+                    text: 'beats'
+                    size_hint_y: .5
+            BoxLayout:
+                orientation: 'vertical'
+                size_hint_x: .25
+                Label:
+                    text: "BPM"
+                    size_hint_y: .25
+                BoxLayout:
+                    padding: 15,0,15,15
+                    orientation: 'vertical'
+                    BoxLayout:
+                        orientation: 'horizontal'
+                        Button:
+                            on_release: root.bpm_auto_toggle(True)
+                            text: 'Auto'
+                            group: 'bpmselect'
+                            state: 'down'
+                        Button:
+                            text: 'Tap'
+                            on_release: root.bpm_auto_toggle(False)
+                            group: 'bpmselect'
+                    BoxLayout:
+                    BoxLayout:
+                        orientation: 'horizontal'
+                        ToggleButton:
+                            text: 'Send'
+                            group: 'midiout'
+                            state: 'down'
+                            on_release: root.set_midiout(True)
+                        ToggleButton:
+                            text: 'Hold'
+                            group: 'midiout'
+                            on_release: root.set_midiout(False)
+                    BoxLayout:
+                        ToggleButton:
+                            text: 'Variations Off'
+                            group: 'variationselect'
+                            on_release: root.set_variation(0)
+                            state: 'down'
+                    BoxLayout:
+                        ToggleButton:
+                            text: 'A'
+                            group: 'variationselect'
+                            on_release: root.set_variation(1)
+                        ToggleButton:
+                            text: 'B'
+                            group: 'variationselect'
+                            on_release: root.set_variation(2)
+                        ToggleButton:
+                            text: 'C'
+                            group: 'variationselect'
+                            on_release: root.set_variation(3)
+                    BoxLayout:
+                        ToggleButton:
+                            text: 'D'
+                            group: 'variationselect'
+                            on_release: root.set_variation(4)
+                        ToggleButton:
+                            text: 'E'
+                            group: 'variationselect'
+                            on_release: root.set_variation(5)
+                        ToggleButton:
+                            text: 'F'
+                            group: 'variationselect'
+                            on_release: root.set_variation(6)
+                    BoxLayout:
+                    BoxLayout:
+                        Button:
+                            text: 'Beat Tap'
+                            on_press: root.tap()
+
+<SettingsScreen@Screen>:
+    name: "Settings"
+    BoxLayout:
+        Label:
+            text: "Settings Screen"
+
 <RootLayout>:
     screen_manager: screen_manager
     orientation: 'vertical'
     BoxLayout:
-        size_hint: 1, .05
+        size_hint: 1, .10
         Spinner:
-            size_hint: .8, 1
+            size_hint: 1, 1
             width: '108sp'
-            text: 'Spinner'
+            text: 'Beats Monitor'
             values: [screen.name for screen in screen_manager.screens]
-            on_text: root.show_kv(*args)
+            on_text: root.screen_manager.current = self.text
     BoxLayout:
+        size_hint: 1, 0.90
         ScreenManager:
+            size_hint: 1, 1
             id: screen_manager
-            Screen:
-                name: "Monitor"
-                #MonitorContainer:
-            Screen:
-                name: "Settings"
-                #SettingsContainer:
+            MonitorScreen:
+            SettingsScreen:
+
